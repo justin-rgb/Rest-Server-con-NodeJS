@@ -65,11 +65,11 @@ const usuariosDelete = async (req, res = response) =>{
     // Fisicamente lo borramos
     //const usuario = await Usuario.findByIdAndDelete( id );
     
-    const usuario = await Usuario.findByIdAndUpdate( id, {estado: false} );
+    const usuario = await Usuario.findByIdAndUpdate( id, {state: false} );
 
     res.json({
         "ok": true,
-        "msg": "El usuario " + usuario + " ha sido eliminado"
+        "msg": "El usuario " + usuario.email + " ha sido eliminado"
     })
 }
 
