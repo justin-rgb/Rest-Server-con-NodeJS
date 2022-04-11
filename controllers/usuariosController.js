@@ -1,37 +1,81 @@
-const { response, request } = require('express')
+const { response, request } = require('express');
+const bcrypt = require('bcryptjs');
+const Usuario = require('../models/usuario');
 
-const usuariosGet = (req = request, res = response) => {
+const usuariosGet = async (req = request, res = response) => {
 
-    const { q, nombre, apikey } = req.query;
+    const { limite = 5, desde = 0 } = req.query;
+    const query = { state: true }
+
+    const [ total, usuarios ] = await Promise.all([
+        Usuario.countDocuments( query ),
+        Usuario.find( query )
+            .skip( Number(desde) )
+            .limit( Number(limite) )
+    ])
 
     res.json({
-        "ok": true,
-        q,
-        nombre,
-        apikey
+        total,
+        usuarios
     })
 }
 
-const usuariosPost = (req, res = response) =>{
+const usuariosPost = async (req, res = response) =>{
     
-    const body = req.body;
+    const { name, email, password, role } = req.body;
+    const usuario = new Usuario({ name, email, password, role });
+
+    //Encriptar contrasna
+    const salt = bcrypt.genSaltSync(10);
+    usuario.password = bcrypt.hashSync( password, salt )
+
+    //Guardar en BD
+    await usuario.save();
 
     res.json({
         "ok": true,
-        "body": body
+        usuario
     })
 
 }
 
-const usuariosDelete = (req, res = response) =>{
+const usuariosPut = async (req, res = response) =>{
+
+    const { id } = req.params;
+    const { _id, password, google, email, ...resto } = req.body;
+
+    // Validar contra BD
+    if (password){
+        const salt = bcrypt.genSaltSync(10);
+        resto.password = bcrypt.hashSync( password, salt )
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, resto);
+
     res.json({
         "ok": true,
-        "msg": "delete"
+        usuario
+    })
+}
+
+const usuariosDelete = async (req, res = response) =>{
+    
+    const { id } = req.params;
+
+    // Fisicamente lo borramos
+    //const usuario = await Usuario.findByIdAndDelete( id );
+    
+    const usuario = await Usuario.findByIdAndUpdate( id, {estado: false} );
+
+    res.json({
+        "ok": true,
+        "msg": "El usuario " + usuario + " ha sido eliminado"
     })
 }
 
 module.exports = {
     usuariosGet,
-    usuariosDelete,
-    usuariosPost
+    usuariosPost,
+    usuariosPut,
+    usuariosDelete
 }
