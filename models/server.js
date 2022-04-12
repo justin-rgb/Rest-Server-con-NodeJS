@@ -8,6 +8,7 @@ class Server{
         this.app = express();
         this.port = process.env.PORT;
         this.usuariosPath = '/api/usuarios';
+        this.authPath = '/api/auth';
 
         //Conectar a BD
         this.conectarDB();
@@ -23,19 +24,17 @@ class Server{
     }
 
     middlewares(){
-
-        //Cors
+       //Cors
         this.app.use( cors() );
-
         //Lectura y parseo del body
         this.app.use(express.json())
-
         //Directorio Publico
         this.app.use( express.static('public'))
     }
 
     routes(){
         
+        this.app.use(this.authPath, require('../routes/auth'));
         this.app.use(this.usuariosPath, require('../routes/usuarios'))
     }
 
