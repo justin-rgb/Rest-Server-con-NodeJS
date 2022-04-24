@@ -49,7 +49,7 @@
                 .then( resp => resp.json() )
                 .then( resp => {
                     console.log(resp)
-                    localStorage.setItem('token', resp.token )
+                    localStorage.setItem('email', resp.usuario.email )
                 })
                 //.then( resp => localStorage.setItem('accessToken',body.id_token) )
             .catch( console.warn() );           
